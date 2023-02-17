@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\FrontController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,24 +14,8 @@ use App\Http\Controllers\FrontController;
 |
 */
 
-// change language
-Route::get('locale/{locale?}', array('en'=>'set-locale', 'uses'=>'App\Http\Controllers\Languages\LanguageController@changeLang'));
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
-//Route::group(['namespace'=>'Front','middleware' => ['Localization']],function()
-//    {
-//        // api layout side front
-//        Route::get('/home',  'FrontController@home')->name('homepage');
-//        Route::post('/home/subscribe',  'FrontController@subscribe')->name('subscribe');
-//        Route::get('/about-us', 'FrontController@about')->name('about');
-//        Route::get('/testimonials',  'FrontController@testi')->name('testi');
-//        Route::get('/services',  'FrontController@service')->name('service');
-//        Route::get('/services/{slug}',  'FrontController@serviceshow')->name('serviceshow');
-//        Route::get('/portfolio',  'FrontController@portfolio')->name('portfolio');
-//        Route::get('/portfolio/{slug}',  'FrontController@portfolioshow')->name('portfolioshow');
-//        Route::get('/blog', 'FrontController@blog')->name('blog');
-//        Route::get('/blog/search', 'FrontController@search')->name('search');
-//        Route::get('/blog/{slug}', 'FrontController@blogshow')->name('blogshow');
-//        Route::get('/categories/{category:slug}', 'FrontController@category')->name('category');
-//        Route::get('/tags/{tag:slug}', 'FrontController@tag')->name('tag');
-//        Route::get('/pages/{slug}',  'FrontController@page')->name('page');
-//    });
+//Route::post('v1', 'ApiController@process')->name('api.v1');

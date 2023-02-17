@@ -9,17 +9,29 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "coingate/coingate-php": "^3.0",
+        "ezyang/htmlpurifier": "^4.13",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
+        "intervention/image": "^2.5",
         "laravel/framework": "^8.12",
         "laravel/tinker": "^2.5",
-        "laravel/ui": "^3.1",
-        "spatie/laravel-translatable": "^4.6"
+        "laravel/ui": "^3.2",
+        "mailjet/mailjet-apiv3-php": "^1.4",
+        "paypal/rest-api-sdk-php": "*",
+        "phpmailer/phpmailer": "^6.2",
+        "razorpay/razorpay": "^2.5",
+        "sendgrid/sendgrid": "^7.6",
+        "spatie/laravel-translatable": "^4.6",
+        "stichoza/google-translate-php": "^4.1",
+        "stripe/stripe-php": "^7.72"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.3",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
+        "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^5.0",
         "phpunit/phpunit": "^9.3.3"
@@ -39,7 +51,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Http/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

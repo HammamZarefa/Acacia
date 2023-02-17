@@ -1,230 +1,242 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
+@section('panel')
 
-@section('styles')
-@section('styles')
-<style>
-   .picture-container {
-  position: relative;
-  cursor: pointer;
-  text-align: center;
-}
- .picture {
-  width: 800px;
-  height: 400px;
-  background-color: #999999;
-  border: 4px solid #CCCCCC;
-  color: #FFFFFF;
-  /* border-radius: 50%; */
-  margin: 5px auto;
-  overflow: hidden;
-  transition: all 0.2s;
-  -webkit-transition: all 0.2s;
-}
-.picture:hover {
-  border-color: #2ca8ff;
-}
-.picture input[type="file"] {
-  cursor: pointer;
-  display: block;
-  height: 100%;
-  left: 0;
-  opacity: 0 !important;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-.picture-src {
-  width: 100%;
-  height: 100%;
-}
-</style>
-@endsection
-@section('content')
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <form action="{{ route('admin.posts.update',$post->id) }}" method="POST" enctype="multipart/form-data">
+                    @method('PUT')
+                    @csrf
+                    <div class="card-body">
+                        <div class="payment-method-item">
+                            <div class="payment-method-header d-flex flex-wrap">
+                                <div class="thumb">
+                                    <div class="avatar-preview">
+                                        <div class="profilePicPreview" style="background-image: url('{{ getImage('assets/images/post/' . $post->cover) }}')"></div>
+                                    </div>
+                                    <div class="avatar-edit">
+                                        <input type="file" name="cover" class="profilePicUpload" id="image" accept=".png, .jpg, .jpeg .webp" />
+                                        <label for="image" class="bg-primary"><i class="la la-pencil"></i></label>
+                                    </div>
+                                </div>
+                                @include('admin.language_selector')
 
-@if (session('error'))
-<div class="alert alert-danger">
-    {{ session('error') }}
-</div>
-@endif
+                                <div class="content">
+                                    <div class="row mt-4 mb-none-15">
+                                        @foreach($language as $lang)
+                                            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15  input-{{$lang->code}} ">
+                                                <div class="input-group">
+                                                    <label class="w-100 font-weight-bold">@lang('Post Title') <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control " placeholder="@lang('Title')" name="title[{{$lang->code}}]" value="{{ $post->getTranslation('title',$lang->code) }}"/>
+                                                </div>
+                                            </div>
+                                        @endforeach
 
-<form action="{{ route('admin.post.update',$post->id) }}" method="POST" enctype="multipart/form-data">
-    @csrf
+                                        @foreach($language as $lang)
+                                            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15 input-{{$lang->code}}">
+                                                <div class="input-group">
+                                                    <label class="w-100 font-weight-bold">@lang('Short Description') <span class="text-danger">*</span></label>
+                                                    <input type="text" name="short_desc[{{$lang->code}}]" placeholder="@lang('Short Description')" class="form-control border-radius-5" value="{{ $post->getTranslation('short_desc',$lang->code) }}"/>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15">
+                                            <label class="w-100 font-weight-bold">@lang('Status') <span class="text-danger">*</span></label>
+                                            <select class="form-control" placeholder="Released" name="status" >
+                                                <option value="PUBLISHED" @if($post->status=='PUBLISHED') selected @endif>@lang('Publish')</option>
+                                                <option value="DRAFT" @if($post->status=='DRAFT') selected @endif>@lang('Draft')</option>
+                                                <option value="FEATURED" @if($post->status=='FEATURED') selected @endif>@lang('Featured')</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="payment-method-body">
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <div class="card border--primary mt-3">
+                                            <h5 class="card-header bg--primary">@lang('Details')</h5>
+                                            <div class="card-body">
+                                                <div class="input-group mb-3">
+                                                    <label class="w-100 font-weight-bold">@lang('Date') </label>
+                                                    <input type="date" class="form-control" name="date" placeholder="0" value="{{ $post->date }}"/>
+                                                </div>
+                                                <div class="input-group">
+                                                    <label class="w-100 font-weight-bold">@lang('Author') </label>
+                                                    <input type="author" class="form-control"  name="author" value="{{$post->author}}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <div class="card border--primary mt-3">
+                                            <h5 class="card-header bg--primary">@lang('Category and Tags')</h5>
+                                            <div class="card-body">
+                                                <div class="input-group mb-3">
+                                                    <label class="w-100 font-weight-bold">@lang('Category') </label>
+                                                    <select class="form-control"  name="category">
+                                                        @foreach($pcategories as $category)
+                                                            <option value="{{$category->id}}" @if($post->category_id==$category->id) selected @endif>{{$category->title}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <label class="w-100 font-weight-bold">@lang('Tags') </label>
+                                                <div class="card border--dark mt-3">
+                                                    <select id="multi-select-demo" multiple="multiple" name="tags[]">
+                                                        @foreach($tags as $tag)
+                                                            <option value="{{$tag->id}}" {{ $post->tags->pluck('id')->contains($tag->id) ? 'selected':''}}>{{$tag->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-    <div class="container">
+                                    <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                        @foreach($language as $lang)
 
-        <div class="form-group">
+                                            <div class="card border--dark mt-3 input-{{$lang->code}}">
+                                                <h5 class="card-header bg--dark">@lang('Body')</h5>
+                                                <div class="card-body">
+                                                    <div class="form-group">
+                                                        <textarea rows="8" class="form-control border-radius-5 nicEdit" name="body[{{$lang->code}}]">{{ $post->getTranslation('body',$lang->code) }}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
 
-            <div class="picture-container">
 
-                <div class="picture">
-
-                    <img src="{{asset('storage/' . $post->cover)}}" class="picture-src" id="wizardPicturePreview" height="200px" width="400px" title=""/>
-
-                    <input type="file" id="wizard-picture" value="{{old('cover') ? old('cover') : $post->cover}}" name="cover" class="form-control {{$errors->first('cover') ? "is-invalid" : "" }} ">
-
-                    <div class="invalid-feedback">
-                        {{ $errors->first('cover') }}
-                    </div>
-
-                </div>
-
-                <h6>Pilih Cover</h6>
-
-            </div>
-
-        </div>
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            @foreach(Config::get('app.languages') as $lang)
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{$lang == 'en' ? "active" : ""}}" id="{{$lang}}-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#{{$lang}}" type="button" role="tab" aria-controls="home"
-                            aria-selected="{{$lang == 'en' ? "true" : "false"}}">{{$lang}}</button>
-                </li>
-            @endforeach
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            @foreach(Config::get('app.languages') as $lang)
-                <div class="tab-pane fade {{$lang == 'en' ? "show  active" : ""}}" id="{{$lang}}" role="tabpanel"
-                     aria-labelledby="{{$lang}}-tab">
-                    <div class="form-group ml-5">
-                        <label for="name" class="col-sm-2 col-form-label">Title {{$lang}}</label>
-                        <div class="col-sm-9">
-                            <input type="text" name='title_{{$lang}}'
-                                   class="form-control {{$errors->first('title_'.$lang) ? "is-invalid" : "" }} "
-                                   value="{{old('title_'.$lang) ? old('title_'.$lang) : $post->getTranslation('title',$lang)}}" id="title_{{$lang}}" placeholder="Title {{$lang}}">
-                            <div class="invalid-feedback">
-                                {{ $errors->first('title_'.$lang) }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group ml-5">
-                        <label for="body" class="col-sm-2 col-form-label">Desc {{$lang}}</label>
-                        <div class="col-sm-9">
-                            <textarea name='body_{{$lang}}' class="form-control {{$errors->first('body_'.$lang) ? "is-invalid" : "" }} "  id="summernote_{{$lang}}" cols="30" rows="10">{{old('body_'.$lang) ? old('body_'.$lang) : $post->getTranslation('body',$lang)}}</textarea>
-                            <div class="invalid-feedback">
-                                {{ $errors->first('body_'.$lang) }}
-                            </div>
-                        </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn--primary btn-block">@lang('Save Post')</button>
                     </div>
-                    <div class="form-group ml-5">
-                        <label for="keyword" class="col-sm-2 col-form-label">Keyword {{$lang}}</label>
-                        <div class="col-sm-7">
-                            <input type="text" name='keyword_{{$lang}}' class="form-control {{$errors->first('keyword_'.$lang) ? "is-invalid" : "" }} " value="{{old('keyword_'.$lang) ? old('keyword_'.$lang) : $post->getTranslation('keyword',$lang)}}" id="keyword_{{$lang}}" placeholder="Keyword {{$lang}}">
-                            <div class="invalid-feedback">
-                                {{ $errors->first('keyword_'.$lang) }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group ml-5">
-                        <label for="meta_desc" class="col-sm-2 col-form-label">Meta Desc {{$lang}}</label>
-                        <div class="col-sm-7">
-                            <input type="text" name='meta_desc_{{$lang}}' class="form-control {{$errors->first('meta_desc_'.$lang) ? "is-invalid" : "" }} " value="{{old('meta_desc_'.$lang) ? old('meta_desc_'.$lang) : $post->getTranslation('meta_desc',$lang)}}" id="meta_desc_{{$lang}}" placeholder="Meta Description {{$lang}}">
-                            <div class="invalid-feedback">
-                                {{ $errors->first('meta_desc_'.$lang) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-        <div class="form-group ml-5">
-
-            <label for="category" class="col-sm-2 col-form-label">Category</label>
-
-            <div class="col-sm-7">
-
-                <select name='category' class="form-control {{$errors->first('category') ? "is-invalid" : "" }} " id="category">
-                    <option disabled selected>Choose One!</option>
-                    @foreach ($categories as $category)
-                        <option {{ $category->id == $post->category_id ? 'selected' : '' }} value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-                <div class="invalid-feedback">
-                    {{ $errors->first('category') }}
-                </div>
-
-            </div>
-
-        </div>
-        <div class="form-group ml-5">
-            <label for="tags" class="col-sm-2 col-form-label">Tags</label>
-            <div class="col-sm-7">
-
-                <select name='tags[]' class="form-control {{$errors->first('tags') ? "is-invalid" : "" }} select2" id="tags" multiple>
-                    @foreach ($post->tags as $tag)
-                        <option selected value="{{ $tag->id }}">{{ $tag->name }}</option>
-                    @endforeach
-
-                    @foreach ($tags as $tags)
-                        <option value="{{ $tags->id }}">{{ $tags->name }}</option>
-                    @endforeach
-                </select>
-                <div class="invalid-feedback">
-                    {{ $errors->first('tags') }}
-                </div>
-
+                </form>
             </div>
         </div>
-        <div class="form-group ml-5">
-
-            <label for="status" class="col-sm-2 col-form-label">Status</label>
-
-            <div class="col-sm-7">
-
-                <select name='status' class="form-control {{$errors->first('status') ? "is-invalid" : "" }} " id="status">
-                    <option {{$post->status == 'PUBLISH' ? 'selected' : ''}} value="PUBLISH">PUBLISH</option>
-
-                    <option {{$post->status == 'DRAFT' ? 'selected' : ''}} value="DRAFT">DRAFT</option>
-                </select>
-
-                <div class="invalid-feedback">
-                    {{ $errors->first('status') }}
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-
-
-
-
-
-
-        <div class="form-group ml-5">
-
-            <div class="col-sm-3">
-
-                <button type="submit" class="btn btn-primary">Update</button>
-
-            </div>
-
-        </div>
-
     </div>
 
-  </form>
+    {{--<div class="row">--}}
+        {{--<div class="col-lg-12">--}}
+            {{--<div class="card">--}}
+                {{--<form action="{{ route('admin.posts.update',$project->id) }}" method="POST" enctype="multipart/form-data">--}}
+                    {{--@method('PUT')--}}
+                    {{--@csrf--}}
+                    {{--<div class="card-body">--}}
+                        {{--<div class="payment-method-item">--}}
+                            {{--<div class="payment-method-header d-flex flex-wrap">--}}
+                                {{--<div class="thumb">--}}
+                                    {{--<div class="avatar-preview">--}}
+                                        {{--<div class="profilePicPreview" style="background-image: url('{{getImage(imagePath()['project']['path'],imagePath()['project']['size'])}}')"></div>--}}
+                                    {{--</div>--}}
+                                    {{--<div class="avatar-edit">--}}
+                                        {{--<input type="file" name="images[]" class="profilePicUpload" id="image" accept=".png, .jpg, .jpeg .webp" multiple/>--}}
+                                        {{--<label for="image" class="bg-primary"><i class="la la-pencil"></i></label>--}}
+                                    {{--</div>--}}
+                                {{--</div>--}}
+
+
+                                {{--<div class="content">--}}
+                                    {{--<div class="row mt-4 mb-none-15">--}}
+                                        {{--<div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15">--}}
+                                            {{--<div class="input-group">--}}
+                                                {{--<label class="w-100 font-weight-bold">@lang('Project Title') <span class="text-danger">*</span></label>--}}
+                                                {{--<input type="text" class="form-control " placeholder="@lang('Tilte')" name="title" value="{{ $project->title }}"/>--}}
+                                            {{--</div>--}}
+                                        {{--</div>--}}
+                                        {{--<div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15">--}}
+
+                                            {{--<div class="input-group">--}}
+                                                {{--<label class="w-100 font-weight-bold">@lang('Summary') <span class="text-danger">*</span></label>--}}
+                                                {{--<input type="text" name="summry" placeholder="@lang('Summary')" class="form-control border-radius-5" value="{{ $project->summary }}"/>--}}
+                                            {{--</div>--}}
+                                        {{--</div>--}}
+                                        {{--<div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15">--}}
+                                            {{--<label class="w-100 font-weight-bold">@lang('Status') <span class="text-danger">*</span></label>--}}
+                                            {{--<input type="text" class="form-control" placeholder="Released" name="status" value="{{ $project->status }}"/>--}}
+                                        {{--</div>--}}
+                                    {{--</div>--}}
+                                {{--</div>--}}
+                            {{--</div>--}}
+                            {{--<div class="payment-method-body">--}}
+                                {{--<div class="row">--}}
+
+                                    {{--<div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">--}}
+                                        {{--<div class="card border--primary mt-3">--}}
+                                            {{--<h5 class="card-header bg--primary">@lang('Details')</h5>--}}
+                                            {{--<div class="card-body">--}}
+                                                {{--<div class="input-group mb-3">--}}
+                                                    {{--<label class="w-100 font-weight-bold">@lang('Order Date') </label>--}}
+                                                    {{--<input type="date" class="form-control" name="order_date" placeholder="0" value="{{ $project->order_date }}"/>--}}
+                                                {{--</div>--}}
+                                                {{--<div class="input-group">--}}
+                                                    {{--<label class="w-100 font-weight-bold">@lang('Released Date') </label>--}}
+                                                    {{--<input type="date" class="form-control" placeholder="0" name="released_date" value="{{ $project->released_date }}"/>--}}
+                                                {{--</div>--}}
+                                                {{--<div class="input-group">--}}
+                                                    {{--<label class="w-100 font-weight-bold">@lang('Client') </label>--}}
+                                                    {{--<input type="text" class="form-control" placeholder="client" name="client" value="{{ $project->client }}"/>--}}
+                                                {{--</div>--}}
+                                            {{--</div>--}}
+                                        {{--</div>--}}
+                                    {{--</div>--}}
+                                    {{--<div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">--}}
+                                        {{--<div class="card border--primary mt-3">--}}
+                                            {{--<h5 class="card-header bg--primary">@lang('Contact')</h5>--}}
+                                            {{--<div class="card-body">--}}
+                                                {{--<div class="input-group mb-3">--}}
+                                                    {{--<label class="w-100 font-weight-bold">@lang('Location')</label>--}}
+                                                    {{--<input type="text" class="form-control" placeholder="UK" name="location" value="{{$project->location }}"/>--}}
+                                                {{--</div>--}}
+                                                {{--<div class="input-group">--}}
+                                                    {{--<label class="w-100 font-weight-bold">@lang('Link')</label>--}}
+                                                    {{--<input type="text" class="form-control" placeholder="google.com" name="link" value="{{ $project->link }}">--}}
+                                                {{--</div>--}}
+                                            {{--</div>--}}
+                                        {{--</div>--}}
+                                    {{--</div>--}}
+
+                                    {{--<div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">--}}
+                                        {{--<div class="card border--dark mt-3">--}}
+
+                                            {{--<h5 class="card-header bg--dark">@lang('Description')</h5>--}}
+                                            {{--<div class="card-body">--}}
+                                                {{--<div class="form-group">--}}
+                                                    {{--<textarea rows="8" class="form-control border-radius-5 nicEdit" name="desc">{{ $project->desc }}</textarea>--}}
+                                                {{--</div>--}}
+                                            {{--</div>--}}
+                                        {{--</div>--}}
+                                    {{--</div>--}}
+
+                                    {{--<div class="col-lg-12">--}}
+                                        {{--<div class="card border--dark mt-3">--}}
+                                            {{--<label class="card-header bg--dark  text-white">@lang('Categories')</label>--}}
+                                            {{--<select id="multi-select-demo" multiple="multiple" name="categories[]">--}}
+                                                {{--@foreach($categories as $category)--}}
+                                                    {{--<option value="{{$category->id}}" @if(in_array($category->id,$project->projectCategories->pluck('id')->toArray()) ) selected @endif>{{$category->title}}</option>--}}
+                                                {{--@endforeach--}}
+                                            {{--</select>--}}
+                                        {{--</div>--}}
+                                    {{--</div>--}}
+                                {{--</div>--}}
+                            {{--</div>--}}
+                        {{--</div>--}}
+                    {{--</div>--}}
+                    {{--<div class="card-footer">--}}
+                        {{--<button type="submit" class="btn btn--primary btn-block">@lang('Save Method')</button>--}}
+                    {{--</div>--}}
+                {{--</form>--}}
+            {{--</div>--}}
+        {{--</div>--}}
+    {{--</div>--}}
+
 @endsection
 
-@push('scripts')
 
-<script>
-    // Prepare the preview for profile picture
-    $("#wizard-picture").change(function(){
-      readURL(this);
-  });
-  //Function to show image before upload
-function readURL(input) {
-  if (input.files && input.files[0]) {
-      var reader = new FileReader();
-      reader.onload = function (e) {
-          $('#wizardPicturePreview').attr('src', e.target.result).fadeIn('slow');
-      }
-      reader.readAsDataURL(input.files[0]);
-  }
-}
-</script>
+@push('breadcrumb-plugins')
+    <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn--primary box--shadow1 text--small"><i class="la la-fw la-backward"></i> @lang('Go Back') </a>
 @endpush
+
