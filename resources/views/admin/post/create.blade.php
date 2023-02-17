@@ -1,210 +1,135 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
+@section('panel')
+@include('admin.language_selector')
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <form action="{{ route('admin.posts.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="card-body">
+                        <div class="payment-method-item">
+                            <div class="payment-method-header d-flex flex-wrap">
+                                <div class="thumb">
+                                    <div class="avatar-preview">
+                                        <div class="profilePicPreview"
+                                             style="background-image: url('{{getImage(imagePath()['gateway']['path'],imagePath()['gateway']['size'])}}')"></div>
+                                    </div>
+                                    <div class="avatar-edit">
+                                        <input type="file" name="cover" class="profilePicUpload" id="image"
+                                               accept=".png, .jpg, .jpeg .webp"/>
+                                        <label for="image" class="bg-primary"><i class="la la-pencil"></i></label>
+                                    </div>
+                                </div>
+                              
 
-@section('styles')
-<style>
-   .picture-container {
-  position: relative;
-  cursor: pointer;
-  text-align: center;
-}
- .picture {
-  width: 800px;
-  height: 400px;
-  background-color: #999999;
-  border: 4px solid #CCCCCC;
-  color: #FFFFFF;
-  /* border-radius: 50%; */
-  margin: 5px auto;
-  overflow: hidden;
-  transition: all 0.2s;
-  -webkit-transition: all 0.2s;
-}
-.picture:hover {
-  border-color: #2ca8ff;
-}
-.picture input[type="file"] {
-  cursor: pointer;
-  display: block;
-  height: 100%;
-  left: 0;
-  opacity: 0 !important;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-.picture-src {
-  width: 100%;
-  height: 100%;
-}
-</style>
-@endsection
-@section('content')
+                                <div class="content">
+                                    <div class="row mt-4 mb-none-15">
+                                        @foreach($language as $lang)
+                                            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15 input-{{$lang->code}} ">
+                                                <div class="input-group">
+                                                    <label class="w-100 font-weight-bold">@lang('Post Title') <span
+                                                                class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control "
+                                                           placeholder="@lang('Title')" name="title[{{$lang->code}}]"
+                                                           value="{{ old('title') }}"/>
+                                                </div>
+                                            </div>
 
-@if (session('error'))
-<div class="alert alert-danger">
-    {{ session('error') }}
-</div>
-@endif
+                                            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15 input-{{$lang->code}}">
+                                                <div class="input-group">
+                                                    <label class="w-100 font-weight-bold">@lang('Short Description')
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="text" name="short_desc[{{$lang->code}}]"
+                                                           placeholder="@lang('Short Description')"
+                                                           class="form-control border-radius-5"
+                                                           value="{{ old('short_desc') }}"/>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4 mb-15">
+                                            <label class="w-100 font-weight-bold">@lang('Status') <span
+                                                        class="text-danger">*</span></label>
+                                            <select class="form-control" placeholder="Released" name="status">
+                                                <option value="PUBLISHED" selected>@lang('Publish')</option>
+                                                <option value="DRAFT">@lang('Draft')</option>
+                                                <option value="FEATURED">@lang('Featured')</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="payment-method-body">
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <div class="card border--primary mt-3">
+                                            <h5 class="card-header bg--primary">@lang('Details')</h5>
+                                            <div class="card-body">
+                                                <div class="input-group mb-3">
+                                                    <label class="w-100 font-weight-bold">@lang('Date') </label>
+                                                    <input type="date" class="form-control" name="date" placeholder="0"
+                                                           value="{{ old('date') }}"/>
+                                                </div>
+                                                <div class="input-group">
+                                                    <label class="w-100 font-weight-bold">@lang('Author') </label>
+                                                    <input type="author" class="form-control" name="author"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                        <div class="card border--primary mt-3">
+                                            <h5 class="card-header bg--primary">@lang('Category and Tags')</h5>
+                                            <div class="card-body">
+                                                <div class="input-group mb-3">
+                                                    <label class="w-100 font-weight-bold">@lang('Category') </label>
+                                                    <select class="form-control" name="category">
+                                                        @foreach($pcategories as $category)
+                                                            <option value="{{$category->id}}">{{$category->title}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <label class="w-100 font-weight-bold">@lang('Tags') </label>
+                                                <div class="card border--dark mt-3">
+                                                    <select id="multi-select-demo" multiple="multiple" name="tags[]">
+                                                        @foreach($tags as $tag)
+                                                            <option value="{{$tag->id}}">{{$tag->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-<form action="{{ route('admin.post.store') }}" method="POST" enctype="multipart/form-data">
-    @csrf
-
-    <div class="container">
-
-        <div class="form-group">
-
-            <div class="picture-container">
-
-                <div class="picture">
-
-                    <img src="" class="picture-src" id="wizardPicturePreview" height="200px" width="400px" title=""/>
-
-                    <input type="file" id="wizard-picture" name="cover" class="form-control {{$errors->first('cover') ? "is-invalid" : "" }} ">
-
-                    <div class="invalid-feedback">
-                        {{ $errors->first('logo') }}
-                    </div>
-
-                </div>
-
-                <h6>Pilih Cover</h6>
-
-            </div>
-
-        </div>
-
-
-
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            @foreach(Config::get('app.languages') as $lang)
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{$lang == 'en' ? "active" : ""}}" id="{{$lang}}-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#{{$lang}}" type="button" role="tab" aria-controls="home"
-                            aria-selected="{{$lang == 'en' ? "true" : "false"}}">{{$lang}}</button>
-                </li>
-            @endforeach
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            @foreach(Config::get('app.languages') as $lang)
-                <div class="tab-pane fade {{$lang == 'en' ? "show  active" : ""}}" id="{{$lang}}" role="tabpanel"
-                     aria-labelledby="{{$lang}}-tab">
-                    <div class="form-group ml-5">
-                        <label for="name" class="col-sm-2 col-form-label">Title {{$lang}}</label>
-                        <div class="col-sm-9">
-                            <input type="text" name='title_{{$lang}}'
-                                   class="form-control {{$errors->first('title_'.$lang) ? "is-invalid" : "" }} "
-                                   value="{{old('title_'.$lang)}}" id="title_{{$lang}}" placeholder="Title {{$lang}}">
-                            <div class="invalid-feedback">
-                                {{ $errors->first('title_'.$lang) }}
+                                    <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                        @foreach($language as $lang)
+                                            <div class="card border--dark mt-3  input-{{$lang->code}}">
+                                                <h5 class="card-header bg--dark">@lang('Body')</h5>
+                                                <div class="card-body">
+                                                    <div class="form-group">
+                                                        <textarea rows="8" class="form-control border-radius-5 nicEdit"
+                                                                  name="body[{{$lang->code}}]">{{ old('body') }}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group ml-5">
-                        <label for="body" class="col-sm-2 col-form-label">Desc {{$lang}}</label>
-                        <div class="col-sm-9">
-                            <textarea name='body_{{$lang}}' class="form-control {{$errors->first('body_'.$lang) ? "is-invalid" : "" }} "  id="summernote_{{$lang}}" cols="30" rows="10">{{old('body_'.$lang)}}</textarea>
-                            <div class="invalid-feedback">
-                                {{ $errors->first('body_'.$lang) }}
-                            </div>
-                        </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn--primary btn-block">@lang('Save Post')</button>
                     </div>
-                    <div class="form-group ml-5">
-                        <label for="keyword" class="col-sm-2 col-form-label">Keyword {{$lang}}</label>
-                        <div class="col-sm-7">
-                            <input type="text" name='keyword_{{$lang}}' class="form-control {{$errors->first('keyword_'.$lang) ? "is-invalid" : "" }} " value="{{old('keyword_'.$lang)}}" id="keyword_{{$lang}}" placeholder="Keyword {{$lang}}">
-                            <div class="invalid-feedback">
-                                {{ $errors->first('keyword_'.$lang) }}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group ml-5">
-                        <label for="meta_desc" class="col-sm-2 col-form-label">Meta Desc {{$lang}}</label>
-                        <div class="col-sm-7">
-                            <input type="text" name='meta_desc_{{$lang}}' class="form-control {{$errors->first('meta_desc_'.$lang) ? "is-invalid" : "" }} " value="{{old('meta_desc_'.$lang)}}" id="meta_desc_{{$lang}}" placeholder="Meta Description {{$lang}}">
-                            <div class="invalid-feedback">
-                                {{ $errors->first('meta_desc_'.$lang) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-        <div class="form-group ml-5">
-            <label for="category" class="col-sm-2 col-form-label">Category</label>
-            <div class="col-sm-9">
-                <select name='category' class="form-control {{$errors->first('category') ? "is-invalid" : "" }} " id="category">
-                    <option disabled selected>Choose One!</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-                <div class="invalid-feedback">
-                    {{ $errors->first('category') }}
-                </div>
-            </div>
-        </div>
-        <div class="form-group ml-5">
-            <label for="tags" class="col-sm-2 col-form-label">Tags</label>
-            <div class="col-sm-9">
-                <select name='tags[]' class="form-control {{$errors->first('tags') ? "is-invalid" : "" }} select2" id="tags" multiple>
-                    @foreach ($tags as $tags)
-                        <option value="{{ $tags->id }}">{{ $tags->name }}</option>
-                    @endforeach
-                </select>
-                <div class="invalid-feedback">
-                    {{ $errors->first('tags') }}
-                </div>
-            </div>
-        </div>
-        <div class="form-group ml-5">
-            <label for="status" class="col-sm-2 col-form-label">Status</label>
-            <div class="col-sm-7">
-                <select name='status' class="form-control {{$errors->first('status') ? "is-invalid" : "" }} " id="status">
-                    <option selected value="PUBLISH">PUBLISH</option>
-                    <option value="DRAFT">DRAFT</option>
-                </select>
-                <div class="invalid-feedback">
-                    {{ $errors->first('status') }}
-                </div>
-            </div>
-        </div>
-        <div class="form-group ml-5">
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-primary">Create</button>
+                </form>
             </div>
         </div>
     </div>
-  </form>
+
 @endsection
 
-@push('scripts')
 
-<script>
-    // languages
-    // $("#selectTeam").change(function(){
-    //     var lang = document.getElementById("selectTeam").value;
-    //     if (lang == 'EN'){
-    //         document.getElementById("local").value = lang;
-    //     }else{
-    //         document.getElementById("local").value = lang;
-    //     }
-    //     console.log(lang);
-    // });
-
-    // Prepare the preview for profile picture
-    $("#wizard-picture").change(function(){
-      readURL(this);
-  });
-  //Function to show image before upload
-function readURL(input) {
-  if (input.files && input.files[0]) {
-      var reader = new FileReader();
-      reader.onload = function (e) {
-          $('#wizardPicturePreview').attr('src', e.target.result).fadeIn('slow');
-      }
-      reader.readAsDataURL(input.files[0]);
-  }
-}
-</script>
+@push('breadcrumb-plugins')
+    <a href="{{ route('admin.posts.index') }}" class="btn btn-sm btn--primary box--shadow1 text--small"><i
+                class="la la-fw la-backward"></i> @lang('Go Back') </a>
 @endpush
+

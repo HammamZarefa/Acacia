@@ -1,128 +1,185 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
+@section('panel')
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card b-radius--10 ">
+                <div class="card-body p-0">
+                    <div class="table-responsive--sm table-responsive">
+                        <table class="table table--light tabstyle--two custom-data-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">@lang('Tilte')</th>
+                                <th scope="col">@lang('Actions')</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @forelse ($categories as $category)
+                                <tr>
+                                    <td data-label="@lang('Title')">{{__($category->title)}}</td>
+                                    <td data-label="@lang('Action')">
+                                        <a href="javascript:void(0)" class="icon-btn ml-1 editBtn"
+                                           data-original-title="@lang('Edit')" data-toggle="tooltip"
+                                           data-url="{{ route('admin.pcategories.update', $category->id)}}"
+                                             data-title="{{  json_encode($category->getTranslations('title')) }}"
+                                            data-lang="{{$language}}">
+                                            <i class="la la-edit"></i>
+                                        </a>
+                                        {{--<a href="javascript:void(0)" class="icon-btn btn--danger ml-1 deleteBtn"--}}
+                                           {{--data-original-title="@lang('Delete')" data-toggle="tooltip"--}}
+                                           {{--data-url="{{ route('admin.pcategories.destroy', $category->id) }}">--}}
+                                            {{--<i class="la la-trash"></i>--}}
+                                        {{--</a>--}}
+                                    </td>
+                                </tr>
+                            @empty
 
-@section('styles')
-
-<link href="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
-
-@endsection
-
-@section('content')
-
-<!-- Page Heading -->
-
-<h1 class="h3 mb-2 text-gray-800">Portfolio Categories</h1>
-
-@if (session('success'))
-
-<div class="alert alert-success">
-
-    {{ session('success') }}
-
-</div>
-
-@endif
-
-<!-- DataTales Example -->
-
-<div class="card shadow mb-4">
-
-    <div class="card-header py-3">
-
-        <form class="form-inline" action="{{ route('admin.pcategory.store') }}" method="POST">
-            @csrf
-            <div class="form-group mx-sm-3 mb-2">
-              <label for="name" class="sr-only">Name En</label>
-              <input type="text" name="name_en" class="form-control {{$errors->first('name_en') ? "is-invalid" : "" }}" value="{{old('name_en')}}" id="name_en" placeholder="Name En" required>
-              <div class="invalid-feedback">
-                {{ $errors->first('name_en') }}
-            </div>
-            </div>
-            <div class="form-group mx-sm-3 mb-2">
-                <label for="name" class="sr-only">Name Ar</label>
-                <input type="text" name="name_ar" class="form-control {{$errors->first('name_ar') ? "is-invalid" : "" }}" value="{{old('name_ar')}}" id="name_ar" placeholder="Name Ar" required>
-                <div class="invalid-feedback">
-                    {{ $errors->first('name_ar') }}
+                            @endforelse
+                            </tbody>
+                        </table><!-- table end -->
+                    </div>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-primary mb-2">Tambah Category</button>
-          </form>
-
-    </div>
-
-    <div class="card-body col-md-4">
-
-        <div class="table-responsive">
-
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-
-                <thead>
-
-                    <tr>
-
-                        <th>No.</th>
-
-                        <th>Name</th>
-
-                        <th>Option</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                @php
-
-                $no=0;
-
-                @endphp
-
-                @foreach ($pcategory as $pcategory)
-
-                    <tr>
-
-                        <td>{{ ++$no }}</td>
-
-                        <td>{{ $pcategory->name }}</td>
-
-                        <td>
-
-                            <a href="{{route('admin.pcategory.edit', [$pcategory->id])}}" class="btn btn-info btn-sm"> Edit </a>
-
-                            <form method="POST" action="{{route('admin.pcategory.destroy', [$pcategory->id])}}" class="d-inline" onsubmit="return confirm('Delete this pcategory permanently?')">
-
-                                @csrf
-
-                                <input type="hidden" name="_method" value="DELETE">
-
-                                <input type="submit" value="Delete" class="btn btn-danger btn-sm">
-
-                            </form>
-
-                        </td>
-
-                    </tr>
-
-                    @endforeach
-
-                </tbody>
-
-            </table>
-
+            </div><!-- card end -->
         </div>
-
     </div>
 
-</div>
 
+
+    {{-- NEW MODAL --}}
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel"><i
+                                class="fa fa-share-square"></i> @lang('Add New Post Categories')</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">×</span></button>
+                </div>
+                @include('admin.language_selector')
+
+                <form class="form-horizontal" method="post" action="{{ route('admin.pcategories.store')}}"
+                      enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body tab-content" id="pills-tabContent">
+                        @foreach($language as $lang)
+                            <div class="form-row form-group tab-pane fade @if($lang->code == 'en') show active @endif"
+                                 id="pills-{{$lang->code}}" role="tabpanel" aria-labelledby="pills-{{$lang->code}}-tab">
+                                <label class="font-weight-bold ">@lang('Title') ({{$lang->name}}) <span
+                                            class="text-danger">*</span></label>
+                                <div class="col-sm-12">
+                                    <input type="text" class="form-control has-error bold "
+                                           name="title[{{$lang->code}}]"
+                                           placeholder="@lang('Web')" required>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn--dark" data-dismiss="modal">@lang('Close')</button>
+                        <button type="submit" class="btn btn--primary" id="btn-save" value="add">@lang('Save')</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- EDIT MODAL --}}
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel"><i
+                                class="fa fa-fw fa-share-square"></i>@lang('Edit Category')</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">×</span></button>
+                </div>
+                @include('admin.language_selector')
+                <form method="post" enctype="multipart/form-data">
+                    @method('PUT')
+                    @csrf
+                    <div class="modal-body tab-content" id="pills-tabContent">
+                        @foreach($language as $lang)
+                            <div class="form-row tab-pane fade @if($lang->code == 'en') show active @endif"
+                                 id="pills-{{$lang->code}}" role="tabpanel" aria-labelledby="pills-{{$lang->code}}-tab">
+                                <label for="inputName" class="font-weight-bold">@lang('Tilte') {{$lang->name}} <span
+                                            class="text-danger">*</span></label>
+                                <div class="col-sm-12">
+                                    <input type="text" id="title_{{$lang->code}}" class="form-control has-error bold" name="title[{{$lang->code}}]"
+                                           required>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn--dark" data-dismiss="modal">@lang('Close')</button>
+                        <button type="submit" class="btn btn--primary" id="btn-save"
+                                value="add">@lang('Update')</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {{-- DELETE MODAL --}}
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">@lang('Remove Category')</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <form method="post" action="">
+                    @method('DELETE')
+                    @csrf
+                    <input type="hidden" name="delete_id" id="delete_id" class="delete_id" value="0">
+                    <div class="modal-body">
+                        <p class="text-muted">@lang('Are you sure you want to Delete?')</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn--dark" data-dismiss="modal">@lang('Close')</button>
+                        <button type="submit" class="btn btn--danger deleteButton">@lang('Delete')</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
-@push('scripts')
 
-<script src="{{ asset('admin/vendor/datatables/jquery.dataTables.min.js') }}"></script>
+@push('breadcrumb-plugins')
+    <a class="btn btn-sm btn--primary box--shadow1 text-white text--small" data-toggle="modal" data-target="#myModal"><i
+                class="fa fa-fw fa-plus"></i>@lang('Add New')</a>
+@endpush
 
-<script src="{{ asset('admin/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+@push('script')
+    <script>
+        (function ($) {
+            "use strict";
+            $('.editBtn').on('click', function () {
+                var modal = $('#editModal');
+                var url = $(this).data('url');
+                var lang= $(this).data('lang');
+                var title=($(this).data('title'));
+                modal.find('form').attr('action', url);
+                modal.find('input[id=title_en]').val(title.en);
+                modal.find('input[id=title_ar]').val(title.ar);
+                // lang.forEach( function(value,key)
 
-<script src="{{ asset('admin/js/demo/datatables-demo.js') }}"></script>
+                // lang.forEach( fill_feilds)
+                // function fill_feilds(item) {
+                //     modal.find('input[name=title['+item['code']+']').val(title[item['code']]);
+                // }
 
+                modal.modal('show');
+            });
+
+            $('.deleteBtn').on('click', function () {
+                var modal = $('#deleteModal');
+                var url = $(this).data('url');
+
+                modal.find('form').attr('action', url);
+                modal.modal('show');
+            });
+        })(jQuery);
+    </script>
 @endpush

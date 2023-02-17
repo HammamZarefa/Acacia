@@ -37,13 +37,12 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\Localization::class
+            \App\Http\Middleware\LanguageMiddleware::class,
         ],
 
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            // \App\Http\Middleware\Localization::class
         ],
     ];
 
@@ -64,7 +63,12 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'Localization' => \App\Http\Middleware\Localization::class
-    ];
 
+        'admin' => \App\Http\Middleware\RedirectIfNotAdmin::class,
+        'admin.guest' => \App\Http\Middleware\RedirectIfAdmin::class,
+
+        'regStatus' => \App\Http\Middleware\AllowRegistration::class,
+        'checkStatus' => \App\Http\Middleware\CheckStatus::class,
+        'demo' => \App\Http\Middleware\Demo::class,
+    ];
 }
